@@ -67,7 +67,6 @@ Open `index.html` in browser
 
 ## 📸 Screenshots
 
-(Add screenshots here)
 
 ---
 
