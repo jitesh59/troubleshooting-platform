@@ -1,11 +1,5 @@
 # 🚀 Tech Troubleshooting Hub
 
-## 📌 Project Description
-
-Tech Troubleshooting Hub is a web-based platform where users can share and discover solutions to technical problems. Users can post issues with step-by-step solutions, vote on helpful answers, and search for existing solutions.
-
----
-
 ## 🎯 Features
 
 * User Registration & Login (JWT Authentication)
