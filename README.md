@@ -75,4 +75,5 @@ Open `index.html` in browser
 
 ## 👨‍💻 Author
 
-N JITESH NAYAK 
+N JITESH NAYAK  56 12414111
+Dev chaudhary 55 12412949
