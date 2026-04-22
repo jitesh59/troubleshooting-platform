@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="style.css"></head>
+<body>
+    <h2>Add New Solution</h2>
+    <input type="text" id="title" placeholder="Title">
+    <textarea id="description" placeholder="Solution details..."></textarea>
+    <button onclick="addSolution()">Submit Solution</button>
+    <script>
+        async function addSolution() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const res = await fetch('http://localhost:3000/solutions', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ title, description })
+            });
+            if (res.ok) window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
