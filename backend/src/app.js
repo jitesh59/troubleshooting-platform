@@ -3,11 +3,16 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/postRoutes");
+// express → helps create the server
+// cors → allows frontend (React/Vite) to talk to backend
+// cookie-parser → reads cookies (used for login/session)
+// authRoutes → handles login/signup APIs
+// postRoutes → handles posts (like your troubleshooting platform)
 
 const app = express();
 
 // Middleware
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10 mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
@@ -25,6 +30,8 @@ app.use(
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+// /api/auth → login, signup, logout
+// /api/posts → create/view troubleshooting posts
 
 // Health check
 app.get("/api/health", (req, res) => {

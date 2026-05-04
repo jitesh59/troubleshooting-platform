@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+
+// These are functions from your controller
 const {
   createPost,
   getPosts,
@@ -10,6 +12,8 @@ const {
   addComment,
 } = require("../controllers/postController");
 const auth = require("../middleware/auth");
+// It checks: “Is the user logged in?”
+
 
 // Public routes
 router.get("/", getPosts);
