@@ -2,130 +2,499 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { postsAPI } from "../utils/api";
-import { HiPencilAlt, HiTag, HiDocumentText, HiArrowLeft } from "react-icons/hi";
+import {
+  HiPencilAlt,
+  HiTag,
+  HiDocumentText,
+  HiArrowLeft,
+  HiLightningBolt,
+  HiEye,
+  HiCode,
+} from "react-icons/hi";
 import toast from "react-hot-toast";
+
+const PRESET_COMMUNITIES = ["general", "technology", "programming", "bugs", "hardware"];
 
 const Content = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ title: "", content: "", subreddit: "" });
+  const [form, setForm] = useState({ title: "", content: "", subreddit: "general" });
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("write"); // "write" or "preview"
 
   const set = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!user) { toast.error("Log in to post"); return navigate("/login"); }
-    if (!form.title.trim() || !form.content.trim()) return toast.error("Title and content required");
+    if (!user) {
+      toast.error("Please log in to publish a post");
+      return navigate("/login");
+    }
+    if (!form.title.trim() || !form.content.trim()) {
+      return toast.error("Title and content are required");
+    }
     setLoading(true);
-    try { await postsAPI.create(form); toast.success("Post created!"); navigate("/"); }
-    catch (err) { toast.error(err.response?.data?.message || "Failed to create post"); }
-    finally { setLoading(false); }
+    try {
+      await postsAPI.create(form);
+      toast.success("Post published successfully!");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create post");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const inputBox = {
-    width: "100%", padding: "10px 14px", borderRadius: 10, fontSize: 13,
-    background: "var(--bg-input)", border: "1px solid var(--border)", color: "var(--text-white)", outline: "none",
-    transition: "border-color .2s, box-shadow .2s",
+  const insertFormatting = (prefix, suffix = "") => {
+    setForm((prev) => ({
+      ...prev,
+      content: prev.content + `${prefix}text${suffix}`,
+    }));
   };
-  const focus = (e) => { e.target.style.borderColor = "var(--brand)"; e.target.style.boxShadow = "0 0 0 3px var(--brand-glow)"; };
-  const blur = (e) => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; };
+
+  const inputStyle = {
+    width: "100%",
+    padding: "12px 14px",
+    borderRadius: 12,
+    fontSize: 14,
+    background: "var(--bg-input)",
+    border: "1px solid var(--border)",
+    color: "var(--text-white)",
+    outline: "none",
+    transition: "all 0.2s ease",
+  };
+
+  const focus = (e) => {
+    e.target.style.borderColor = "var(--brand-primary)";
+    e.target.style.boxShadow = "0 0 0 3px var(--brand-glow)";
+  };
+
+  const blur = (e) => {
+    e.target.style.borderColor = "var(--border)";
+    e.target.style.boxShadow = "none";
+  };
 
   return (
-    <div style={{ background: "var(--bg-body)", minHeight: "100vh" }}>
+    <div style={{ minHeight: "100vh", position: "relative" }}>
+      {/* Top Header */}
+      <header className="glass-header" style={{ position: "sticky", top: 0, zIndex: 50 }}>
+        <div
+          style={{
+            maxWidth: 800,
+            margin: "0 auto",
+            padding: "0 20px",
+            display: "flex",
+            alignItems: "center",
+            height: 64,
+            justifyContent: "space-between",
+          }}
+        >
+          <Link
+            to="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              color: "var(--text-gray)",
+              fontSize: 13,
+              fontWeight: 600,
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-gray)")}
+          >
+            <HiArrowLeft size={16} /> Back to Discussions
+          </Link>
 
-      {/* Top bar */}
-      <header style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(15,15,15,.82)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
-        borderBottom: "1px solid var(--border)",
-      }}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "center", height: 56, gap: 12 }}>
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-gray)", fontSize: 13, fontWeight: 500, transition: "color .15s" }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-white)"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-gray)"}>
-            <HiArrowLeft size={16} /> Back
-          </Link>
-          <div style={{ flex: 1 }} />
-          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          <Link to="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <HiLightningBolt size={18} color="#fff" />
             </div>
-            <span style={{ fontSize: 16, fontWeight: 800, color: "var(--text-white)" }}>Troubleshooting</span>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>
+              Troubleshoot<span className="gradient-text">.io</span>
+            </span>
           </Link>
-          <div style={{ flex: 1 }} />
         </div>
       </header>
 
-      {/* Form */}
-      <main style={{ maxWidth: 620, margin: "0 auto", padding: "32px 16px" }}>
-        <div className="anim-fade-up" style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 28, boxShadow: "0 12px 40px rgba(0,0,0,.3)" }}>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, paddingBottom: 16, borderBottom: "1px solid var(--border)" }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <HiPencilAlt size={18} color="#fff" />
+      {/* Main Container */}
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px" }}>
+        <div
+          className="anim-fade-up glass-panel"
+          style={{
+            borderRadius: 20,
+            padding: 32,
+            boxShadow: "0 20px 50px rgba(0,0,0,0.4)",
+          }}
+        >
+          {/* Title Header */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 28,
+              paddingBottom: 20,
+              borderBottom: "1px solid var(--border)",
+            }}
+          >
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 6px 20px rgba(99, 102, 241, 0.3)",
+              }}
+            >
+              <HiPencilAlt size={22} color="#fff" />
             </div>
             <div>
-              <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-white)" }}>Create a Post</h1>
-              <p style={{ fontSize: 12, color: "var(--text-dim)" }}>Share something with the community</p>
+              <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text-white)", letterSpacing: "-0.01em" }}>
+                Create a Discussion
+              </h1>
+              <p style={{ fontSize: 13, color: "var(--text-dim)" }}>
+                Ask for help, share an issue, or post a developer solution
+              </p>
             </div>
           </div>
 
-          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            {/* Community */}
+          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* Community Topic Chips */}
             <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-dim)", marginBottom: 6 }}>
-                <HiTag size={12} /> Community
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  color: "var(--text-dim)",
+                  marginBottom: 8,
+                }}
+              >
+                <HiTag size={14} color="#8b5cf6" /> Topic / Subreddit
               </label>
-              <input name="subreddit" type="text" value={form.subreddit} onChange={set}
-                placeholder="e.g. technology" style={inputBox} onFocus={focus} onBlur={blur} />
-              <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4 }}>Leave empty for "general"</p>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                {PRESET_COMMUNITIES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setForm({ ...form, subreddit: c })}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      background: form.subreddit === c ? "rgba(99, 102, 241, 0.2)" : "rgba(15, 23, 42, 0.6)",
+                      border: form.subreddit === c ? "1px solid rgba(99, 102, 241, 0.5)" : "1px solid var(--border)",
+                      color: form.subreddit === c ? "#a5b4fc" : "var(--text-gray)",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    r/{c}
+                  </button>
+                ))}
+              </div>
+
+              <input
+                name="subreddit"
+                type="text"
+                value={form.subreddit}
+                onChange={set}
+                placeholder="Or type custom topic e.g. react native"
+                style={inputStyle}
+                onFocus={focus}
+                onBlur={blur}
+              />
             </div>
 
-            {/* Title */}
+            {/* Post Title */}
             <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-dim)", marginBottom: 6 }}>
-                <HiPencilAlt size={12} /> Title
-              </label>
-              <input name="title" type="text" required maxLength={300} value={form.title} onChange={set}
-                placeholder="An interesting title" style={inputBox} onFocus={focus} onBlur={blur} />
-              <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4, textAlign: "right" }}>{form.title.length}/300</p>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--text-dim)",
+                  }}
+                >
+                  <HiPencilAlt size={14} color="#8b5cf6" /> Post Title
+                </label>
+                <span style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                  {form.title.length}/300
+                </span>
+              </div>
+              <input
+                name="title"
+                type="text"
+                required
+                maxLength={300}
+                value={form.title}
+                onChange={set}
+                placeholder="e.g. How to fix CORS policy error in Node.js Express server?"
+                style={inputStyle}
+                onFocus={focus}
+                onBlur={blur}
+              />
             </div>
 
-            {/* Content */}
+            {/* Content & Tab Switcher */}
             <div>
-              <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-dim)", marginBottom: 6 }}>
-                <HiDocumentText size={12} /> Content
-              </label>
-              <textarea name="content" required maxLength={10000} rows={7} value={form.content} onChange={set}
-                placeholder="What's on your mind?"
-                style={{ ...inputBox, padding: "12px 14px", resize: "none" }} onFocus={focus} onBlur={blur} />
-              <p style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 4, textAlign: "right" }}>{form.content.length}/10000</p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 8,
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--text-dim)",
+                  }}
+                >
+                  <HiDocumentText size={14} color="#8b5cf6" /> Details & Explanation
+                </label>
+
+                {/* Write vs Preview Tabs */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 4,
+                    background: "rgba(15, 23, 42, 0.6)",
+                    padding: 3,
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("write")}
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "none",
+                      cursor: "pointer",
+                      background: activeTab === "write" ? "var(--brand-primary)" : "transparent",
+                      color: activeTab === "write" ? "#fff" : "var(--text-dim)",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    Write
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("preview")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "4px 10px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "none",
+                      cursor: "pointer",
+                      background: activeTab === "preview" ? "var(--brand-primary)" : "transparent",
+                      color: activeTab === "preview" ? "#fff" : "var(--text-dim)",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <HiEye size={12} /> Preview
+                  </button>
+                </div>
+              </div>
+
+              {activeTab === "write" ? (
+                <>
+                  {/* Markdown Helper Toolbar */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "6px 10px",
+                      background: "rgba(15, 23, 42, 0.5)",
+                      border: "1px solid var(--border)",
+                      borderBottom: "none",
+                      borderRadius: "12px 12px 0 0",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => insertFormatting("**", "**")}
+                      style={toolbarBtnStyle}
+                      title="Bold"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => insertFormatting("`", "`")}
+                      style={toolbarBtnStyle}
+                      title="Inline Code"
+                    >
+                      <HiCode size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => insertFormatting("\n```js\n", "\n```\n")}
+                      style={{ ...toolbarBtnStyle, fontSize: 10 }}
+                      title="Code Block"
+                    >
+                      {"{ }"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => insertFormatting("> ")}
+                      style={toolbarBtnStyle}
+                      title="Quote"
+                    >
+                      "
+                    </button>
+                  </div>
+
+                  <textarea
+                    name="content"
+                    required
+                    maxLength={10000}
+                    rows={8}
+                    value={form.content}
+                    onChange={set}
+                    placeholder="Describe what you were trying to achieve, what actually happened, and include any error trace logs..."
+                    style={{
+                      ...inputStyle,
+                      borderRadius: "0 0 12px 12px",
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                    }}
+                    onFocus={focus}
+                    onBlur={blur}
+                  />
+                </>
+              ) : (
+                <div
+                  style={{
+                    minHeight: 200,
+                    padding: 16,
+                    borderRadius: 12,
+                    background: "rgba(15, 23, 42, 0.6)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-white)",
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {form.content ? (
+                    form.content
+                  ) : (
+                    <span style={{ color: "var(--text-dim)", fontStyle: "italic" }}>
+                      Nothing to preview yet. Start typing in the Write tab!
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-              <button type="button" onClick={() => navigate("/")} style={{
-                flex: 1, padding: 11, borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                background: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-gray)", transition: "all .15s",
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.color = "var(--text-white)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-gray)"; }}
-              >Cancel</button>
-              <button type="submit" disabled={loading} style={{
-                flex: 1, padding: 11, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer",
-                background: "var(--brand)", border: "none", color: "#fff",
-                opacity: loading ? 0.5 : 1, transition: "transform .15s, opacity .2s",
-              }}
-                onMouseEnter={(e) => { if (!loading) e.currentTarget.style.transform = "scale(1.02)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-              >{loading ? "Posting…" : "Post"}</button>
+            {/* Form Action Buttons */}
+            <div style={{ display: "flex", gap: 12, paddingTop: 12 }}>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-gray)",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border-light)";
+                  e.currentTarget.style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.color = "var(--text-gray)";
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="gradient-btn"
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  border: "none",
+                  color: "#fff",
+                  opacity: loading ? 0.6 : 1,
+                }}
+              >
+                {loading ? "Publishing..." : "Publish Post"}
+              </button>
             </div>
           </form>
         </div>
       </main>
     </div>
   );
+};
+
+const toolbarBtnStyle = {
+  background: "transparent",
+  border: "none",
+  color: "var(--text-gray)",
+  cursor: "pointer",
+  padding: "4px 8px",
+  borderRadius: 4,
+  fontSize: 12,
+  fontWeight: 700,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
 };
 
 export default Content;

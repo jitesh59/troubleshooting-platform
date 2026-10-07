@@ -1,64 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* ===== Design System ===== */
+/* ===== Modern Glassmorphism & Color System ===== */
 :root {
-  --bg-body: #0f0f0f;
-  --bg-surface: #181818;
-  --bg-elevated: #222222;
-  --bg-input: #1e1e1e;
-  --border: #2c2c2c;
-  --border-light: #3a3a3a;
-  --text-white: #f5f5f5;
-  --text-gray: #a0a0a0;
-  --text-dim: #666666;
-  --brand: #6c5ce7;
-  --brand-light: #a29bfe;
-  --brand-glow: rgba(108, 92, 231, 0.25);
-  --green: #00b894;
-  --red: #ff6b6b;
-  --orange: #fdcb6e;
-  --blue: #74b9ff;
-  --upvote-color: #ff6b6b;
-  --downvote-color: #74b9ff;
+  --bg-body: #0b0f19;
+  --bg-surface: rgba(17, 24, 39, 0.7);
+  --bg-surface-hover: rgba(30, 41, 59, 0.8);
+  --bg-elevated: #1e293b;
+  --bg-input: rgba(15, 23, 42, 0.8);
+  
+  --border: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.16);
+  --border-brand: rgba(99, 102, 241, 0.4);
+  
+  --text-white: #f9fafb;
+  --text-gray: #94a3b8;
+  --text-dim: #64748b;
+  
+  --brand-primary: #6366f1;
+  --brand-secondary: #8b5cf6;
+  --brand-light: #a5b4fc;
+  --brand-glow: rgba(99, 102, 241, 0.25);
+  
+  --cyan-accent: #06b6d4;
+  --emerald-accent: #10b981;
+  --rose-accent: #f43f5e;
+  --amber-accent: #f59e0b;
+  
+  --upvote-color: #10b981;
+  --downvote-color: #06b6d4;
+  --delete-color: #f43f5e;
 }
 
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--bg-body);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-body);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(6, 182, 212, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--text-white);
-  line-height: 1.55;
+  line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-::selection { background: var(--brand-glow); color: #fff; }
-
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-body); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
-
-a { color: inherit; text-decoration: none; }
-
-/* ===== Utility Animations ===== */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+  border: 2px solid #0b0f19;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+}
+
+/* Glass Components */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+
+.glass-header {
+  background: rgba(11, 15, 25, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  box-shadow: 0 4px 20px var(--brand-glow);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gradient-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+}
+
+.gradient-btn:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
-  to   { opacity: 1; }
+  to { opacity: 1; }
 }
+
 @keyframes pop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.25); }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); }
   100% { transform: scale(1); }
 }
 
-.anim-fade-up  { animation: fadeUp .45s ease-out both; }
-.anim-fade-in  { animation: fadeIn .3s ease-out both; }
-.anim-pop      { animation: pop .25s ease-out; }
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+.anim-fade-up {
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-fade-in {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+.anim-pop {
+  animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.anim-float {
+  animation: floatSlow 6s ease-in-out infinite;
+}
